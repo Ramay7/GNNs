@@ -18,6 +18,14 @@ K = 10 # for kNN
 kNN_type = 3
 distance_type = 'L2'
 
+'''
+Solutions for kNN:
+    * sklearn (NearestNeighbors, dense input)
+    * scipy (KDTree, dense input)
+    * n2 (HnswIndex, dense input): https://github.com/kakao/n2
+    * PySparNN (sparse input): https://github.com/facebookresearch/pysparnn
+'''
+
 def find_edges(input, test):
     print(f"building kNN classifier ... ", end=" ")
     st_time = time.time()
@@ -33,6 +41,8 @@ def find_edges(input, test):
         for index in tqdm(range(input.shape[0])):
             tree.add_data(input[index, :])
         tree.build(n_threads=10)
+    elif kNN_type == 4:
+        pass
     else:
         raise NotImplementedError
     print(f"time={time.time()-st_time:.3f}s")
@@ -102,7 +112,7 @@ def create_json_file(edge, fea, tra_id, val_id, tst_id, dataset_name, suffix=Non
         f.write(json.dumps(id_map))
 
     # feature
-    sp_fea = sp.csr_matrix(fea).tolil()
+    sp_fea = sp.csr_matrix(fea)
     sp.save_npz(file_path, sp_fea)
     # np.save(file_path + 'feats.npy', fea) # dense store
 
