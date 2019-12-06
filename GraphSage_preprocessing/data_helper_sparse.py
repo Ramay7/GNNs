@@ -11,7 +11,8 @@ from collections import defaultdict
 import argparse
 
 # datasets = ['Eurlex-4K']
-datasets = ['Wiki10-31K']
+# datasets = ['Wiki10-31K']
+datasets = ['AmazonCat-13K']
 suffix = ['X.trn.npz', 'X.tst.npz', 'X.val.npz', 'Y.trn.npz', 'Y.tst.npz', 'Y.val.npz']
 
 # K = 10 # for kNN
