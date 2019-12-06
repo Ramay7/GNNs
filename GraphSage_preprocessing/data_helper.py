@@ -186,7 +186,8 @@ if __name__ == "__main__":
                 error_label.append(i)
                 label_fea[i, 0] = 1e-10
                 continue
-            label_fea[i, :] = np.mean(tra_val_fea[y_x_id[i], :], axis=0)  # label_fea[i, :] = tra_val_fea[y_x_id[i], :].mean(axis=0)
+            label_fea[i, :] = np.mean(tra_val_fea[y_x_id[i], :], axis=0)
+            # label_fea[i, :] = tra_val_fea[y_x_id[i], :].mean(axis=0)
 
         print(f"# error label = {len(error_label)}")
 
@@ -195,7 +196,7 @@ if __name__ == "__main__":
         y_val_id, y_tst_id = [], []
 
         for K in [1, 5, 10, 20, 50, 100]:
-            print(f"K={K} ...\n preprocessing features ... ")
+            print(f"\nK={K} ...\npreprocessing features ... ")
             t0 = time.time()
             x_edge_list = find_edges(tra_val_fea, all_fea, K)
             create_json_file(x_edge_list, all_fea, tra_id, val_id, tst_id, dataset, suffix='X-', K=K)
