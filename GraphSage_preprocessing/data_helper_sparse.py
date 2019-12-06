@@ -10,7 +10,8 @@ import networkx as nx
 from collections import defaultdict
 import argparse
 
-datasets = ['Eurlex-4K']
+# datasets = ['Eurlex-4K']
+datasets = ['Wiki10-31K']
 suffix = ['X.trn.npz', 'X.tst.npz', 'X.val.npz', 'Y.trn.npz', 'Y.tst.npz', 'Y.val.npz']
 
 # K = 10 # for kNN
@@ -125,7 +126,7 @@ def create_json_file(edge, fea, tra_id, val_id, tst_id, dataset_name, suffix=Non
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--knn_type", default=3, type=int, choices=[1, 2, 3, 4], help="the algorithm of finding kNN")
+    parser.add_argument("--knn_type", default=4, type=int, choices=[1, 2, 3, 4], help="the algorithm of finding kNN")
     parser.add_argument("--distance_type", default="L2", type=str, choices=["L2", "angular"], help="the way to evaluate the smiliarity of two samples")
     args = parser.parse_args()
     kNN_type = args.knn_type
@@ -175,10 +176,10 @@ if __name__ == "__main__":
 
         fea_dim = tra_fea.shape[1]
         row_, col_, data_ = [], [], []
-        # label_fea = sp.csr_matrix((data_, (row_, col_)), shape=(label_num, fea_dim)).tolil()
-        # tra_val_fea = tra_val_fea.tolil()
-        tra_val_fea_dense = tra_val_fea.todense()
-        label_fea = np.zeros(shape=(label_num, fea_dim))
+        label_fea = sp.csr_matrix((data_, (row_, col_)), shape=(label_num, fea_dim)).tolil()
+        tra_val_fea = tra_val_fea.tolil()
+        # tra_val_fea_dense = tra_val_fea.todense()
+        # label_fea = np.zeros(shape=(label_num, fea_dim))
         error_label = []
         for i in tqdm(range(label_num)):
             if len(y_x_id[i]) == 0:
@@ -186,8 +187,8 @@ if __name__ == "__main__":
                 error_label.append(i)
                 label_fea[i, 0] = 1e-10
                 continue
-            label_fea[i, :] = np.mean(tra_val_fea[y_x_id[i], :], axis=0)
-            # label_fea[i, :] = tra_val_fea[y_x_id[i], :].mean(axis=0)
+            # label_fea[i, :] = np.mean(tra_val_fea[y_x_id[i], :], axis=0)
+            label_fea[i, :] = tra_val_fea[y_x_id[i], :].mean(axis=0)
 
         print(f"# error label = {len(error_label)}")
 
