@@ -3,7 +3,6 @@
 import os, sys, time
 import numpy as np
 import scipy.sparse as sp
-from scipy.sparse import load_npz
 from tqdm import tqdm
 from networkx.readwrite import json_graph
 import json
@@ -42,7 +41,10 @@ def find_edges(input, test):
             tree.add_data(input[index, :])
         tree.build(n_threads=10)
     elif kNN_type == 4:
-        pass
+        import pysparnn.cluster_index as ci
+        sp_input = sp.csr_matrix(input)
+        input_num = input.shape[0]
+        tree = ci.MultiClusterIndex(sp_input, range(input_num))
     else:
         raise NotImplementedError
     print(f"time={time.time()-st_time:.3f}s")
@@ -53,16 +55,20 @@ def find_edges(input, test):
         _, indices = tree.kneighbors(test)
     elif kNN_type == 2:
         _, indices = tree.query(test, k=K + 1)
-    else:
+    elif kNN_type == 3:
         indices = []
         for i in tqdm(range(test.shape[0])):
             indices.append(tree.search_by_vector(test[i, :], k=K + 1))
+    else:
+        sp_test = sp.csr_matrix(test)
+        indices = tree.search(sp_test, k=K+1, return_distance=False)
     print(f"time={time.time()-st_time:.3f}s")
 
 
     edge_list = []
     for index1, per in enumerate(indices):
         for index2 in per:
+            index2 = int(index2)
             if index1 != index2:
                 edge_list.append((index1, index2))
     print(f"done! .... time={time.time()-st_time:.3f}s")
@@ -89,7 +95,7 @@ def create_json_file(edge, fea, tra_id, val_id, tst_id, dataset_name, suffix=Non
     file_path = f"./data/{dataset_name}/"
     if not os.path.exists(file_path):
         os.makedirs(file_path)
-    file_path += "{dataset_name}-"
+    file_path += f"{dataset_name}-"
     if suffix is not None:
         file_path += suffix
 
@@ -124,6 +130,7 @@ if __name__ == "__main__":
     kNN_type = args.knn_type
     distance_type = args.distance_type
 
+
     for dataset in datasets:
         begin_time = time.time()
         print(f"start preprocessing {dataset} ...")
@@ -131,7 +138,7 @@ if __name__ == "__main__":
         data = []
         nums = []
         for j in range(len(suffix)):
-            tmp = np.array(load_npz(file_path + suffix[j]).todense())
+            tmp = np.array(sp.load_npz(file_path + suffix[j]).todense())
             data.append(tmp)
             nums.append(data[-1].shape[0])
             print(f"{suffix[j]}.shape={data[-1].shape}", end=' ')
