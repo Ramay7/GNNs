@@ -183,7 +183,7 @@ if __name__ == "__main__":
                 # print(f"label id = {i} has no corresponding examples !!!!")
                 error_label.append(i)
                 continue
-            label_fea[i, :] = tra_val_lab[y_x_id[i], :].mean(axis=0)
+            label_fea[i, :] = tra_val_fea[y_x_id[i], :].mean(axis=0)
 
         y_edge_list = find_edges(label_fea, label_fea)
         y_tra_id = [i for i in range(label_fea.shape[0])]
