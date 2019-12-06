@@ -2,6 +2,7 @@
 
 import os, sys, time
 import numpy as np
+import scipy.sparse as sp
 from scipy.sparse import load_npz
 from tqdm import tqdm
 from networkx.readwrite import json_graph
@@ -75,9 +76,10 @@ def create_json_file(edge, fea, tra_id, val_id, tst_id, dataset_name, suffix=Non
         G.node[id]["val"] = False
 
 
-    file_path = f"./data/{dataset_name}/{dataset_name}-"
+    file_path = f"./data/{dataset_name}/"
     if not os.path.exists(file_path):
         os.makedirs(file_path)
+    file_path += "{dataset_name}-"
     if suffix is not None:
         file_path += suffix
 
@@ -100,7 +102,9 @@ def create_json_file(edge, fea, tra_id, val_id, tst_id, dataset_name, suffix=Non
         f.write(json.dumps(id_map))
 
     # feature
-    np.save(file_path + 'feats.npy', fea)
+    sp_fea = sp.csr_matrix(fea).tolil()
+    sp.save_npz(file_path, sp_fea)
+    # np.save(file_path + 'feats.npy', fea) # dense store
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -153,9 +157,11 @@ if __name__ == "__main__":
 
         fea_dim = tra_fea.shape[1]
         label_fea = np.zeros((label_num, fea_dim))
+        error_label = []
         for i in tqdm(range(label_num)):
             if len(y_x_id[i]) == 0:
                 print(f"label id = {i} has no corresponding examples !!!!")
+                error_label.append(i)
                 continue
             label_fea[i, :] = np.mean(tra_val_lab[y_x_id[i], :])
 
@@ -163,4 +169,6 @@ if __name__ == "__main__":
         y_tra_id = [i for i in range(label_fea.shape[0])]
         y_val_id, y_tst_id = [], []
         create_json_file(y_edge_list, label_fea, y_tra_id, y_val_id, y_tst_id, dataset, suffix='Y-')
+
+        print(f"# error label = {len(error_label)}")
         print(f"finish {dataset} ... time={time.time()-begin_time:.3f}s")
