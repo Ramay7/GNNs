@@ -111,6 +111,8 @@ if __name__ == "__main__":
     distance_type = args.distance_type
 
     for dataset in datasets:
+        begin_time = time.time()
+        print(f"start preprocessing {dataset} ...")
         file_path = './vanilla_data/' + dataset + '/'
         data = []
         nums = []
@@ -118,7 +120,7 @@ if __name__ == "__main__":
             tmp = np.array(load_npz(file_path + suffix[j]).todense())
             data.append(tmp)
             nums.append(data[-1].shape[0])
-            print(data[-1].shape, end=' ')
+            print(f"{suffix[j]}.shape={data[-1].shape}", end=' ')
         print("")
         tra_fea, tst_fea, val_fea, tra_lab, tst_lab, val_lab = data
         tra_num, tst_num, val_num = nums[0], nums[1], nums[2]
@@ -131,9 +133,11 @@ if __name__ == "__main__":
         val_id = [i for i in range(tra_num, tra_num + val_num)]
         tst_id = [i for i in range(tra_num + val_num, tra_num + val_num + tst_num)]
 
-        create_json_file(x_edge_list, all_fea, tra_id, val_id, tst_id, dataset, knn_type='X-')
+        create_json_file(x_edge_list, all_fea, tra_id, val_id, tst_id, dataset, suffix='X-')
         del tra_val_fea
         del all_fea
+
+        print(f"finish features ... time={time.time()-begin_time:.3f}s")
 
         # for each label, find the feature set
         label_num = tra_lab.shape[0]
@@ -155,4 +159,5 @@ if __name__ == "__main__":
         y_edge_list = find_edges(label_fea, label_fea)
         y_tra_id = [i for i in range(label_fea.shape[0])]
         y_val_id, y_tst_id = [], []
-        create_json_file(y_edge_list, label_fea, y_tra_id, y_val_id, y_tst_id, dataset, 'Y-')
+        create_json_file(y_edge_list, label_fea, y_tra_id, y_val_id, y_tst_id, dataset, suffix='Y-')
+        print(f"finish {dataset} ... time={time.time()-begin_time:.3f}s")
