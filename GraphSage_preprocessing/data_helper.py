@@ -160,7 +160,7 @@ if __name__ == "__main__":
         error_label = []
         for i in tqdm(range(label_num)):
             if len(y_x_id[i]) == 0:
-                print(f"label id = {i} has no corresponding examples !!!!")
+                # print(f"label id = {i} has no corresponding examples !!!!")
                 error_label.append(i)
                 continue
             label_fea[i, :] = np.mean(tra_val_lab[y_x_id[i], :])
