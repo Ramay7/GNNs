@@ -124,7 +124,7 @@ def create_json_file(edge, fea, tra_id, val_id, tst_id, dataset_name, suffix=Non
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--knn_type", default=3, type=int, choices=[1, 2, 3], help="the algorithm of finding kNN")
+    parser.add_argument("--knn_type", default=3, type=int, choices=[1, 2, 3, 4], help="the algorithm of finding kNN")
     parser.add_argument("--distance_type", default="L2", type=str, choices=["L2", "angular"], help="the way to evaluate the smiliarity of two samples")
     args = parser.parse_args()
     kNN_type = args.knn_type
