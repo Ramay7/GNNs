@@ -160,9 +160,18 @@ if __name__ == "__main__":
 
         print(f"finish features ... time={time.time()-begin_time:.3f}s")
 
+        #####################################
+        # labels_reshape = labels.flatten()
+        # n_labels = len(np.unique(labels_reshape))
+        # labels_one_hot = np.eye(n_labels, dtype=int)[labels_reshape]
+        # class_map = {k: list(labels_one_hot[i]) for i, k in enumerate(nodes.keys())}
+        # with open("data-class_map.json", mode="w") as f:
+        #     f.write(json.dumps(class_map, default=str))
+        ######################################
 
 
         # for each label, find the feature set
+
         label_num = tra_lab.shape[1]
         tra_val_lab = sp.vstack([tra_lab, val_lab])
         y_x_id = [[] for i in range(label_num)]
@@ -175,10 +184,10 @@ if __name__ == "__main__":
 
         fea_dim = tra_fea.shape[1]
         row_, col_, data_ = [], [], []
-        label_fea = sp.csr_matrix((data_, (row_, col_)), shape=(label_num, fea_dim)).tolil()
-        tra_val_fea = tra_val_fea.tolil()
-        # tra_val_fea_dense = tra_val_fea.todense()
-        # label_fea = np.zeros(shape=(label_num, fea_dim))
+        # label_fea = sp.csr_matrix((data_, (row_, col_)), shape=(label_num, fea_dim)).tolil()
+        # tra_val_fea = tra_val_fea.tolil()
+        tra_val_fea_dense = tra_val_fea.todense()
+        label_fea = np.zeros(shape=(label_num, fea_dim))
         error_label = []
         for i in tqdm(range(label_num)):
             if len(y_x_id[i]) == 0:
@@ -186,8 +195,8 @@ if __name__ == "__main__":
                 error_label.append(i)
                 label_fea[i, 0] = 1e-10
                 continue
-            # label_fea[i, :] = np.mean(tra_val_fea[y_x_id[i], :], axis=0)
-            label_fea[i, :] = tra_val_fea[y_x_id[i], :].mean(axis=0)
+            label_fea[i, :] = np.mean(tra_val_fea[y_x_id[i], :], axis=0)
+            # label_fea[i, :] = tra_val_fea[y_x_id[i], :].mean(axis=0)
 
         label_fea = sp.csr_matrix(label_fea)
         y_edge_list = find_edges(label_fea, label_fea)
