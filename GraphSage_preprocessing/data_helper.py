@@ -163,7 +163,7 @@ if __name__ == "__main__":
 
 
         # for each label, find the feature set
-        label_num = tra_lab.shape[0]
+        label_num = tra_lab.shape[1]
         tra_val_lab = sp.vstack([tra_lab, val_lab])
         y_x_id = [[] for i in range(label_num)]
         indx, indy = tra_val_lab.nonzero()
