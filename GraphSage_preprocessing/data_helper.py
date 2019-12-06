@@ -120,7 +120,7 @@ def create_json_file(edge, fea, tra_id, val_id, tst_id, dataset_name, suffix=Non
         f.write(json.dumps(id_map))
 
     # feature
-    sp.save_npz(file_path, fea)
+    sp.save_npz(file_path + 'feats.npy', fea)
     # np.save(file_path + 'feats.npy', fea.todense()) # dense store
 
 if __name__ == "__main__":
@@ -156,7 +156,6 @@ if __name__ == "__main__":
         tst_id = [i for i in range(tra_num + val_num, tra_num + val_num + tst_num)]
 
         create_json_file(x_edge_list, all_fea, tra_id, val_id, tst_id, dataset, suffix='X-')
-        del tra_val_fea
         del all_fea
 
         print(f"finish features ... time={time.time()-begin_time:.3f}s")
