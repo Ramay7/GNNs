@@ -139,7 +139,7 @@ if __name__ == "__main__":
         data = []
         nums = []
         for j in range(len(suffix)):
-            tmp = np.array(sp.load_npz(file_path + suffix[j]))
+            tmp = sp.load_npz(file_path + suffix[j])
             data.append(tmp)
             nums.append(data[-1].shape[0])
             print(f"{suffix[j]}={data[-1].shape}", end=' ')
