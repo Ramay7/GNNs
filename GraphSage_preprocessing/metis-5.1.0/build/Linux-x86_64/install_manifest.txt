@@ -1,0 +1,8 @@
+/home/zhuyn/.local/include/metis.h
+/home/zhuyn/.local/lib/libmetis.so
+/home/zhuyn/.local/bin/gpmetis
+/home/zhuyn/.local/bin/ndmetis
+/home/zhuyn/.local/bin/mpmetis
+/home/zhuyn/.local/bin/m2gmetis
+/home/zhuyn/.local/bin/graphchk
+/home/zhuyn/.local/bin/cmpfillin
