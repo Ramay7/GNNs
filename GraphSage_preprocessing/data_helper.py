@@ -154,6 +154,9 @@ if __name__ == "__main__":
         fea_dim = tra_fea.shape[1]
         label_fea = np.zeros((label_num, fea_dim))
         for i in tqdm(range(label_num)):
+            if len(y_x_id[i]) == 0:
+                print(f"label id = {i} has no corresponding examples !!!!")
+                continue
             label_fea[i, :] = np.mean(tra_val_lab[y_x_id[i], :])
 
         y_edge_list = find_edges(label_fea, label_fea)
