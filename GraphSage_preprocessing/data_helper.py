@@ -149,13 +149,13 @@ if __name__ == "__main__":
 
         tra_val_fea = sp.vstack([tra_fea, val_fea])
         all_fea = sp.vstack([tra_val_fea, tst_fea])
-        # x_edge_list = find_edges(tra_val_fea, all_fea)
+        x_edge_list = find_edges(tra_val_fea, all_fea)
 
         tra_id = [i for i in range(tra_num)]
         val_id = [i for i in range(tra_num, tra_num + val_num)]
         tst_id = [i for i in range(tra_num + val_num, tra_num + val_num + tst_num)]
 
-        # create_json_file(x_edge_list, all_fea, tra_id, val_id, tst_id, dataset, suffix='X-')
+        create_json_file(x_edge_list, all_fea, tra_id, val_id, tst_id, dataset, suffix='X-')
         del all_fea
 
         print(f"finish features ... time={time.time()-begin_time:.3f}s")
