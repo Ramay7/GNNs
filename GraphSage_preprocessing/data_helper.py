@@ -131,77 +131,79 @@ if __name__ == "__main__":
     kNN_type = args.knn_type
     distance_type = args.distance_type
 
-    for K in [1, 5, 10, 20, 50, 100]:
-        for dataset in datasets:
-            begin_time = time.time()
-            if K > 1:
-                print("")
-            print(f"start preprocessing {dataset}, K={K} ...")
-            file_path = './vanilla_data/' + dataset + '/'
-            data, nums = [], []
-            for j in range(len(suffix)):
-                tmp = sp.load_npz(file_path + suffix[j])
-                data.append(tmp)
-                nums.append(data[-1].shape[0])
-                print(f"{suffix[j]}={data[-1].shape}", end=' ')
-            print("")
-            tra_fea, tst_fea, val_fea, tra_lab, tst_lab, val_lab = data
-            tra_num, tst_num, val_num = nums[0], nums[1], nums[2]
+    for dataset in datasets:
+        begin_time = time.time()
+        print(f"start preprocessing {dataset} ...")
+        file_path = './vanilla_data/' + dataset + '/'
+        data, nums = [], []
+        for j in range(len(suffix)):
+            tmp = sp.load_npz(file_path + suffix[j])
+            data.append(tmp)
+            nums.append(data[-1].shape[0])
+            print(f"{suffix[j]}={data[-1].shape}", end=' ')
+        print("")
+        tra_fea, tst_fea, val_fea, tra_lab, tst_lab, val_lab = data
+        tra_num, tst_num, val_num = nums[0], nums[1], nums[2]
 
-            tra_val_fea = sp.vstack([tra_fea, val_fea])
-            all_fea = sp.vstack([tra_val_fea, tst_fea])
+        tra_val_fea = sp.vstack([tra_fea, val_fea])
+        all_fea = sp.vstack([tra_val_fea, tst_fea])
+
+        tra_id = [i for i in range(tra_num)]
+        val_id = [i for i in range(tra_num, tra_num + val_num)]
+        tst_id = [i for i in range(tra_num + val_num, tra_num + val_num + tst_num)]
+
+        #####################################
+        # labels_reshape = labels.flatten()
+        # n_labels = len(np.unique(labels_reshape))
+        # labels_one_hot = np.eye(n_labels, dtype=int)[labels_reshape]
+        # class_map = {k: list(labels_one_hot[i]) for i, k in enumerate(nodes.keys())}
+        # with open("data-class_map.json", mode="w") as f:
+        #     f.write(json.dumps(class_map, default=str))
+        ######################################
+
+        # for each label, find the feature set
+
+        label_num = tra_lab.shape[1]
+        tra_val_lab = sp.vstack([tra_lab, val_lab])
+        y_x_id = [[] for i in range(label_num)]
+        indx, indy = tra_val_lab.nonzero()
+        for i in range(len(indx)):
+            y_x_id[indy[i]].append(indx[i])
+
+        s = sum([len(i) for i in y_x_id])
+        assert s == len(indx), f"check labels_num ERROR --- s={s} len(indx)={len(indx)}"
+
+        fea_dim = tra_fea.shape[1]
+        row_, col_, data_ = [], [], []
+        # label_fea = sp.csr_matrix((data_, (row_, col_)), shape=(label_num, fea_dim)).tolil()
+        # tra_val_fea = tra_val_fea.tolil()
+        tra_val_fea_dense = tra_val_fea.todense()
+        label_fea = np.zeros(shape=(label_num, fea_dim))
+        error_label = []
+        for i in tqdm(range(label_num)):
+            if len(y_x_id[i]) == 0:
+                # print(f"label id = {i} has no corresponding examples !!!!")
+                error_label.append(i)
+                label_fea[i, 0] = 1e-10
+                continue
+            label_fea[i, :] = np.mean(tra_val_fea[y_x_id[i], :], axis=0)  # label_fea[i, :] = tra_val_fea[y_x_id[i], :].mean(axis=0)
+
+        print(f"# error label = {len(error_label)}")
+
+        label_fea = sp.csr_matrix(label_fea)
+        y_tra_id = [i for i in range(label_fea.shape[0])]
+        y_val_id, y_tst_id = [], []
+
+        for K in [1, 5, 10, 20, 50, 100]:
+            print(f"K={K} ...\n preprocessing features ... ")
+            t0 = time.time()
             x_edge_list = find_edges(tra_val_fea, all_fea, K)
-
-            tra_id = [i for i in range(tra_num)]
-            val_id = [i for i in range(tra_num, tra_num + val_num)]
-            tst_id = [i for i in range(tra_num + val_num, tra_num + val_num + tst_num)]
-
             create_json_file(x_edge_list, all_fea, tra_id, val_id, tst_id, dataset, suffix='X-', K=K)
-            del all_fea
+            print(f"finish features ... time={time.time() - t0:.3f}s")
 
-            print(f"finish features ... time={time.time() - begin_time:.3f}s")
 
-            #####################################
-            # labels_reshape = labels.flatten()
-            # n_labels = len(np.unique(labels_reshape))
-            # labels_one_hot = np.eye(n_labels, dtype=int)[labels_reshape]
-            # class_map = {k: list(labels_one_hot[i]) for i, k in enumerate(nodes.keys())}
-            # with open("data-class_map.json", mode="w") as f:
-            #     f.write(json.dumps(class_map, default=str))
-            ######################################
-
-            # for each label, find the feature set
-
-            label_num = tra_lab.shape[1]
-            tra_val_lab = sp.vstack([tra_lab, val_lab])
-            y_x_id = [[] for i in range(label_num)]
-            indx, indy = tra_val_lab.nonzero()
-            for i in range(len(indx)):
-                y_x_id[indy[i]].append(indx[i])
-
-            s = sum([len(i) for i in y_x_id])
-            assert s == len(indx), f"s={s} len(indx)={len(indx)}"
-
-            fea_dim = tra_fea.shape[1]
-            row_, col_, data_ = [], [], []
-            # label_fea = sp.csr_matrix((data_, (row_, col_)), shape=(label_num, fea_dim)).tolil()
-            # tra_val_fea = tra_val_fea.tolil()
-            tra_val_fea_dense = tra_val_fea.todense()
-            label_fea = np.zeros(shape=(label_num, fea_dim))
-            error_label = []
-            for i in tqdm(range(label_num)):
-                if len(y_x_id[i]) == 0:
-                    # print(f"label id = {i} has no corresponding examples !!!!")
-                    error_label.append(i)
-                    label_fea[i, 0] = 1e-10
-                    continue
-                label_fea[i, :] = np.mean(tra_val_fea[y_x_id[i], :], axis=0)  # label_fea[i, :] = tra_val_fea[y_x_id[i], :].mean(axis=0)
-
-            label_fea = sp.csr_matrix(label_fea)
             y_edge_list = find_edges(label_fea, label_fea, K)
-            y_tra_id = [i for i in range(label_fea.shape[0])]
-            y_val_id, y_tst_id = [], []
             create_json_file(y_edge_list, label_fea, y_tra_id, y_val_id, y_tst_id, dataset, suffix='Y-', K=K)
+            print(f"finish K={K} ... time={time.time() - t0:.3f}s")
 
-            print(f"# error label = {len(error_label)}")
-            print(f"finish {dataset} K={K} ... time={time.time() - begin_time:.3f}s")
+        print(f"finish {dataset} time={time.time()-begin_time:.3f}s")
