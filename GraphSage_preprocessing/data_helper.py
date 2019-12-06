@@ -155,7 +155,7 @@ if __name__ == "__main__":
         val_id = [i for i in range(tra_num, tra_num + val_num)]
         tst_id = [i for i in range(tra_num + val_num, tra_num + val_num + tst_num)]
 
-        create_json_file(x_edge_list, all_fea, tra_id, val_id, tst_id, dataset, suffix='X-')
+        # create_json_file(x_edge_list, all_fea, tra_id, val_id, tst_id, dataset, suffix='X-')
         del all_fea
 
         print(f"finish features ... time={time.time()-begin_time:.3f}s")
@@ -175,7 +175,8 @@ if __name__ == "__main__":
 
         fea_dim = tra_fea.shape[1]
         row_, col_, data_ = [], [], []
-        label_fea = sp.csr_matrix((data_, (row_, col_)), shape=(label_num, fea_dim))
+        label_fea = sp.csr_matrix((data_, (row_, col_)), shape=(label_num, fea_dim)).tolil()
+        tra_val_fea = tra_val_fea.tolil()
         error_label = []
         for i in tqdm(range(label_num)):
             if len(y_x_id[i]) == 0:
