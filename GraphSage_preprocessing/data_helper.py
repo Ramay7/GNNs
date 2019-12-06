@@ -28,6 +28,10 @@ Solutions for kNN:
 def find_edges(input, test):
     print(f"building kNN classifier ... ", end=" ")
     st_time = time.time()
+
+    if kNN_type <= 3:
+        input, test = input.todense(), test.todense()
+
     if kNN_type == 1:
         from sklearn.neighbors import NearestNeighbors
         tree = NearestNeighbors(n_neighbors=K + 1, algorithm='ball_tree').fit(input)
@@ -42,9 +46,8 @@ def find_edges(input, test):
         tree.build(n_threads=10)
     elif kNN_type == 4:
         import pysparnn.cluster_index as ci
-        sp_input = sp.csr_matrix(input)
         input_num = input.shape[0]
-        tree = ci.MultiClusterIndex(sp_input, range(input_num))
+        tree = ci.MultiClusterIndex(input, range(input_num))
     else:
         raise NotImplementedError
     print(f"time={time.time()-st_time:.3f}s")
@@ -60,8 +63,7 @@ def find_edges(input, test):
         for i in tqdm(range(test.shape[0])):
             indices.append(tree.search_by_vector(test[i, :], k=K + 1))
     else:
-        sp_test = sp.csr_matrix(test)
-        indices = tree.search(sp_test, k=K+1, return_distance=False)
+        indices = tree.search(test, k=K+1, k_clusters=100, return_distance=False)
     print(f"time={time.time()-st_time:.3f}s")
 
 
@@ -118,9 +120,8 @@ def create_json_file(edge, fea, tra_id, val_id, tst_id, dataset_name, suffix=Non
         f.write(json.dumps(id_map))
 
     # feature
-    sp_fea = sp.csr_matrix(fea)
-    sp.save_npz(file_path, sp_fea)
-    # np.save(file_path + 'feats.npy', fea) # dense store
+    sp.save_npz(file_path, fea)
+    # np.save(file_path + 'feats.npy', fea.todense()) # dense store
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -138,16 +139,16 @@ if __name__ == "__main__":
         data = []
         nums = []
         for j in range(len(suffix)):
-            tmp = np.array(sp.load_npz(file_path + suffix[j]).todense())
+            tmp = np.array(sp.load_npz(file_path + suffix[j]))
             data.append(tmp)
             nums.append(data[-1].shape[0])
-            print(f"{suffix[j]}.shape={data[-1].shape}", end=' ')
+            print(f"{suffix[j]}={data[-1].shape}", end=' ')
         print("")
         tra_fea, tst_fea, val_fea, tra_lab, tst_lab, val_lab = data
         tra_num, tst_num, val_num = nums[0], nums[1], nums[2]
 
-        tra_val_fea = np.concatenate((tra_fea, val_fea), axis=0)
-        all_fea = np.concatenate((tra_val_fea, tst_fea), axis=0)
+        tra_val_fea = sp.vstack([tra_fea, val_fea])
+        all_fea = sp.vstack([tra_val_fea, tst_fea])
         x_edge_list = find_edges(tra_val_fea, all_fea)
 
         tra_id = [i for i in range(tra_num)]
@@ -160,10 +161,11 @@ if __name__ == "__main__":
 
         print(f"finish features ... time={time.time()-begin_time:.3f}s")
 
+
+
         # for each label, find the feature set
         label_num = tra_lab.shape[0]
-        tra_val_lab = np.concatenate((tra_lab, val_lab), axis=0)
-        print(tra_val_lab.shape)
+        tra_val_lab = sp.vstack([tra_lab, val_lab])
         y_x_id = [[] for i in range(label_num)]
         indx, indy = tra_val_lab.nonzero()
         for i in range(len(indx)):
@@ -173,14 +175,15 @@ if __name__ == "__main__":
         assert s == len(indx), f"s={s} len(indx)={len(indx)}"
 
         fea_dim = tra_fea.shape[1]
-        label_fea = np.zeros((label_num, fea_dim))
+        row_, col_, data_ = [], [], []
+        label_fea = sp.csr_matrix((data_, (row_, col_)), shape=(label_num, fea_dim))
         error_label = []
         for i in tqdm(range(label_num)):
             if len(y_x_id[i]) == 0:
                 # print(f"label id = {i} has no corresponding examples !!!!")
                 error_label.append(i)
                 continue
-            label_fea[i, :] = np.mean(tra_val_lab[y_x_id[i], :])
+            label_fea[i, :] = tra_val_lab[y_x_id[i], :].mean(axis=0)
 
         y_edge_list = find_edges(label_fea, label_fea)
         y_tra_id = [i for i in range(label_fea.shape[0])]
