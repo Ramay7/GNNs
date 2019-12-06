@@ -184,6 +184,7 @@ if __name__ == "__main__":
             if len(y_x_id[i]) == 0:
                 # print(f"label id = {i} has no corresponding examples !!!!")
                 error_label.append(i)
+                label_fea[i, 0] = 1e-10
                 continue
             label_fea[i, :] = np.mean(tra_val_fea[y_x_id[i], :], axis=0)
             # label_fea[i, :] = tra_val_fea[y_x_id[i], :].mean(axis=0)
