@@ -120,7 +120,7 @@ def create_json_file(edge, fea, tra_id, val_id, tst_id, dataset_name, suffix=Non
         f.write(json.dumps(id_map))
 
     # feature
-    sp.save_npz(file_path + 'feats.npy', fea)
+    sp.save_npz(file_path + 'feats', fea)
     # np.save(file_path + 'feats.npy', fea.todense()) # dense store
 
 if __name__ == "__main__":
@@ -175,16 +175,20 @@ if __name__ == "__main__":
 
         fea_dim = tra_fea.shape[1]
         row_, col_, data_ = [], [], []
-        label_fea = sp.csr_matrix((data_, (row_, col_)), shape=(label_num, fea_dim)).tolil()
-        tra_val_fea = tra_val_fea.tolil()
+        # label_fea = sp.csr_matrix((data_, (row_, col_)), shape=(label_num, fea_dim)).tolil()
+        # tra_val_fea = tra_val_fea.tolil()
+        tra_val_fea_dense = tra_val_fea.todense()
+        label_fea = np.zeros(shape=(label_num, fea_dim))
         error_label = []
         for i in tqdm(range(label_num)):
             if len(y_x_id[i]) == 0:
                 # print(f"label id = {i} has no corresponding examples !!!!")
                 error_label.append(i)
                 continue
-            label_fea[i, :] = tra_val_fea[y_x_id[i], :].mean(axis=0)
+            label_fea[i, :] = np.mean(tra_val_fea[y_x_id[i], :], axis=0)
+            # label_fea[i, :] = tra_val_fea[y_x_id[i], :].mean(axis=0)
 
+        label_fea = sp.csr_matrix(label_fea)
         y_edge_list = find_edges(label_fea, label_fea)
         y_tra_id = [i for i in range(label_fea.shape[0])]
         y_val_id, y_tst_id = [], []
