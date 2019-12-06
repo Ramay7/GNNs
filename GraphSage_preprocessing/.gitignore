@@ -3,4 +3,4 @@ saved_model/*
 *.pyc
 data/*
 .idea/*
-
+vanilla_data/*
