@@ -149,7 +149,7 @@ if __name__ == "__main__":
 
         tra_val_fea = sp.vstack([tra_fea, val_fea])
         all_fea = sp.vstack([tra_val_fea, tst_fea])
-        x_edge_list = find_edges(tra_val_fea, all_fea)
+        # x_edge_list = find_edges(tra_val_fea, all_fea)
 
         tra_id = [i for i in range(tra_num)]
         val_id = [i for i in range(tra_num, tra_num + val_num)]
