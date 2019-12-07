@@ -10,9 +10,9 @@ import networkx as nx
 from collections import defaultdict
 import argparse
 
-# datasets = ['Eurlex-4K']
+datasets = ['Eurlex-4K']
 # datasets = ['Wiki10-31K']
-datasets = ['AmazonCat-13K']
+# datasets = ['AmazonCat-13K']
 suffix = ['X.trn.npz', 'X.tst.npz', 'X.val.npz', 'Y.trn.npz', 'Y.tst.npz', 'Y.val.npz']
 
 # K = 10 # for kNN
@@ -207,6 +207,9 @@ if __name__ == "__main__":
             # tra_val_fea_dense = tra_val_fea.todense()
             # label_fea = np.zeros(shape=(label_num, fea_dim))
             error_label = []
+
+
+            '''
             for i in tqdm(range(label_num)):
                 if len(y_x_id[i]) == 0:
                     # print(f"label id = {i} has no corresponding examples !!!!")
@@ -218,7 +221,28 @@ if __name__ == "__main__":
 
             print(f"# error label = {len(error_label)}")
             label_fea = sp.csr_matrix(label_fea)
+            '''
 
+            def per_process(i):
+                tmp = sp.csr_matrix((data_, (row_, col_)), shape=(1, fea_dim))
+                if len(y_x_id[i]) == 0:
+                    error_label.append(i)
+                    tmp[0,0] = 1e-10
+                else:
+                    tmp = tra_val_fea[y_x_id[i], :].mean(axis=0)
+                return tmp
+
+
+            from multiprocessing.dummy import Pool as ThreadPool
+            from multiprocessing import Pool
+
+            # pool = ThreadPool()
+            # label_fea = pool.map(per_process, range(label_num))
+            # pool.close()
+            # pool.join()
+            pool = Pool(50)
+            label_fea = pool.map(per_process, range(label_num))
+            sp.vstack(tuple(label_fea))
             sp.save_npz(file_path + 'label_feat.npz', label_fea)
         else:
             label_fea = sp.load_npz(file_path + 'label_feat.npz')
