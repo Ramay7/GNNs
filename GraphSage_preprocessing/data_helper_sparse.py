@@ -153,6 +153,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--knn_type", default=4, type=int, choices=[1, 2, 3, 4, 5], help="the algorithm of finding kNN")
     parser.add_argument("--distance_type", default="L2", type=str, choices=["L2", "angular"], help="the way to evaluate the smiliarity of two samples")
+    parser.add_argument("--user_prepro_y", default=True, type=bool, help="whether or not use preprocessing features of labels")
     args = parser.parse_args()
     kNN_type = args.knn_type
     distance_type = args.distance_type
@@ -187,37 +188,42 @@ if __name__ == "__main__":
         #     f.write(json.dumps(class_map, default=str))
         ######################################
 
-        # for each label, find the feature set
+        if (not args.use_prepro_y) or (not os.path.exists(file_path + "label_feat.npz")):
+            # for each label, find the feature set
+            label_num = tra_lab.shape[1]
+            tra_val_lab = sp.vstack([tra_lab, val_lab])
+            y_x_id = [[] for i in range(label_num)]
+            indx, indy = tra_val_lab.nonzero()
+            for i in range(len(indx)):
+                y_x_id[indy[i]].append(indx[i])
 
-        label_num = tra_lab.shape[1]
-        tra_val_lab = sp.vstack([tra_lab, val_lab])
-        y_x_id = [[] for i in range(label_num)]
-        indx, indy = tra_val_lab.nonzero()
-        for i in range(len(indx)):
-            y_x_id[indy[i]].append(indx[i])
+            s = sum([len(i) for i in y_x_id])
+            assert s == len(indx), f"check labels_num ERROR --- s={s} len(indx)={len(indx)}"
 
-        s = sum([len(i) for i in y_x_id])
-        assert s == len(indx), f"check labels_num ERROR --- s={s} len(indx)={len(indx)}"
+            fea_dim = tra_fea.shape[1]
+            row_, col_, data_ = [], [], []
+            label_fea = sp.csr_matrix((data_, (row_, col_)), shape=(label_num, fea_dim)).tolil()
+            tra_val_fea = tra_val_fea.tolil()
+            # tra_val_fea_dense = tra_val_fea.todense()
+            # label_fea = np.zeros(shape=(label_num, fea_dim))
+            error_label = []
+            for i in tqdm(range(label_num)):
+                if len(y_x_id[i]) == 0:
+                    # print(f"label id = {i} has no corresponding examples !!!!")
+                    error_label.append(i)
+                    label_fea[i, 0] = 1e-10
+                    continue
+                # label_fea[i, :] = np.mean(tra_val_fea[y_x_id[i], :], axis=0)
+                label_fea[i, :] = tra_val_fea[y_x_id[i], :].mean(axis=0)
 
-        fea_dim = tra_fea.shape[1]
-        row_, col_, data_ = [], [], []
-        label_fea = sp.csr_matrix((data_, (row_, col_)), shape=(label_num, fea_dim)).tolil()
-        tra_val_fea = tra_val_fea.tolil()
-        # tra_val_fea_dense = tra_val_fea.todense()
-        # label_fea = np.zeros(shape=(label_num, fea_dim))
-        error_label = []
-        for i in tqdm(range(label_num)):
-            if len(y_x_id[i]) == 0:
-                # print(f"label id = {i} has no corresponding examples !!!!")
-                error_label.append(i)
-                label_fea[i, 0] = 1e-10
-                continue
-            # label_fea[i, :] = np.mean(tra_val_fea[y_x_id[i], :], axis=0)
-            label_fea[i, :] = tra_val_fea[y_x_id[i], :].mean(axis=0)
+            print(f"# error label = {len(error_label)}")
+            label_fea = sp.csr_matrix(label_fea)
 
-        print(f"# error label = {len(error_label)}")
+            sp.save_npz(file_path + 'label_feat.npz', label_fea)
+        else:
+            label_fea = sp.load_npz(file_path + 'label_feat.npz')
 
-        label_fea = sp.csr_matrix(label_fea)
+
         y_tra_id = [i for i in range(label_fea.shape[0])]
         y_val_id, y_tst_id = [], []
 
