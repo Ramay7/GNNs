@@ -10,9 +10,9 @@ import networkx as nx
 from collections import defaultdict
 import argparse
 
-# datasets = ['Eurlex-4K']
+datasets = ['Eurlex-4K']
 # datasets = ['Wiki10-31K']
-datasets = ['AmazonCat-13K']
+# datasets = ['AmazonCat-13K']
 suffix = ['X.trn.npz', 'X.tst.npz', 'X.val.npz', 'Y.trn.npz', 'Y.tst.npz', 'Y.val.npz']
 
 # K = 10 # for kNN
@@ -31,7 +31,7 @@ def find_edges(input, test, K):
     print(f"building kNN classifier ... ", end=" ")
     st_time = time.time()
 
-    if kNN_type <= 3:
+    if kNN_type in [1, 2]:
         input, test = input.todense(), test.todense()
 
     if kNN_type == 1:
@@ -45,7 +45,7 @@ def find_edges(input, test, K):
         tree = HnswIndex(input.shape[1], distance_type) # distance_type in ['angular', 'L2']
         for index in tqdm(range(input.shape[0])):
             tree.add_data(input[index, :])
-        tree.build(n_threads=10)
+        tree.build(n_threads=20)
     elif kNN_type == 4:
         import pysparnn.cluster_index as ci
         input_num = input.shape[0]

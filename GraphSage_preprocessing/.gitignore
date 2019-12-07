@@ -2,5 +2,5 @@ __pycache__
 saved_model/*
 *.pyc
 data/*
-.idea/*
+.idea/
 vanilla_data/*

@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="76f78740-b63e-4b74-8db4-5e4db3a85e3f" name="Default Changelist" comment="" />
+    <list default="true" id="76f78740-b63e-4b74-8db4-5e4db3a85e3f" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data_helper_sparse.py" beforeDir="false" afterPath="$PROJECT_DIR$/data_helper_sparse.py" afterDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -25,8 +28,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/data_helper_sparse.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2982">
-              <caret line="187" column="8" lean-forward="true" selection-start-line="187" selection-start-column="8" selection-end-line="187" selection-end-column="8" />
+            <state relative-caret-position="-3108">
+              <caret line="33" column="24" selection-start-line="33" selection-start-column="24" selection-end-line="33" selection-end-column="24" />
               <folding>
                 <element signature="e#25#45#0" expanded="true" />
               </folding>
@@ -414,8 +417,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/data_helper_sparse.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2982">
-          <caret line="187" column="8" lean-forward="true" selection-start-line="187" selection-start-column="8" selection-end-line="187" selection-end-column="8" />
+        <state relative-caret-position="-3108">
+          <caret line="33" column="24" selection-start-line="33" selection-start-column="24" selection-end-line="33" selection-end-column="24" />
           <folding>
             <element signature="e#25#45#0" expanded="true" />
           </folding>
