@@ -25,6 +25,7 @@ Solutions for kNN:
     * scipy (KDTree, dense input)
     * n2 (HnswIndex, dense input): https://github.com/kakao/n2
     * PySparNN (sparse input): https://github.com/facebookresearch/pysparnn
+    * nmslib (sparse input): https://github.com/nmslib/nmslib
 '''
 
 def find_edges(input, test, K):
@@ -50,6 +51,22 @@ def find_edges(input, test, K):
         import pysparnn.cluster_index as ci
         input_num = input.shape[0]
         tree = ci.MultiClusterIndex(input, range(input_num))
+    elif kNN_type == 5:
+        import nmslib
+        M, efC, num_threads = 30, 100, 4
+        index_time_params = {'M': M, 'indexThreadQty': num_threads, 'efConstruction': efC, 'post': 0}
+        space_name = 'cosinesimil_sparse'
+        data_type = nmslib.DataType.SPARSE_VECTOR
+        tree = nmslib.init(method='hnsw', space=space_name, data_type=data_type)
+        tree.addDataPointBatch(input)
+
+        tree.createIndex(index_time_params)
+        # Setting query-time parameters
+        efS = 100
+        query_time_params = {'efSearch': efS}
+        print('Setting query-time parameters', query_time_params)
+        tree.setQueryTimeParams(query_time_params)
+
     else:
         raise NotImplementedError
     print(f"time={time.time()-st_time:.3f}s")
@@ -64,6 +81,10 @@ def find_edges(input, test, K):
         indices = []
         for i in tqdm(range(test.shape[0])):
             indices.append(tree.search_by_vector(test[i, :], k=K + 1))
+    elif kNN_type == 4:
+        indices_ = tree.knnQueryBatch(test, k=K, num_threads=num_threads)
+        indices = [i[0] for i in indices_]
+        del indices_
     else:
         indices = tree.search(test, k=K+1, k_clusters=100, return_distance=False)
     print(f"time={time.time()-st_time:.3f}s")

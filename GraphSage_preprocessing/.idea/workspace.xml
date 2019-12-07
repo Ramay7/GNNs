@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="76f78740-b63e-4b74-8db4-5e4db3a85e3f" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/data_helper_sparse.py" beforeDir="false" afterPath="$PROJECT_DIR$/data_helper_sparse.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -17,7 +16,7 @@
         <entry file="file://$PROJECT_DIR$/data_helper_dense.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="2152">
-              <caret line="125" lean-forward="true" selection-start-line="125" selection-end-line="125" />
+              <caret line="125" selection-start-line="125" selection-end-line="125" />
               <folding>
                 <element signature="e#25#45#0" expanded="true" />
               </folding>
@@ -28,10 +27,22 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/data_helper_sparse.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-3108">
-              <caret line="33" column="24" selection-start-line="33" selection-start-column="24" selection-end-line="33" selection-end-column="24" />
+            <state relative-caret-position="397">
+              <caret line="80" column="20" lean-forward="true" selection-start-line="80" selection-start-column="20" selection-end-line="80" selection-end-column="20" />
               <folding>
                 <element signature="e#25#45#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/data_helper_nmslib.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="315">
+              <caret line="72" column="40" lean-forward="true" selection-start-line="72" selection-start-column="8" selection-end-line="72" selection-end-column="40" />
+              <folding>
+                <element signature="e#25#37#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -99,6 +110,7 @@
         <option value="$PROJECT_DIR$/README.md" />
         <option value="$PROJECT_DIR$/test_pysparnn.py" />
         <option value="$PROJECT_DIR$/data_helper.py" />
+        <option value="$PROJECT_DIR$/data_helper_nmslib.py" />
         <option value="$PROJECT_DIR$/data_helper_sparse.py" />
       </list>
     </option>
@@ -231,7 +243,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python tests.pytest in test_pysparnn.py">
+  <component name="RunManager" selected="Python.data_helper_nmslib">
     <configuration name="data_helper" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="GraphSage_preprocessing" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -245,6 +257,48 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/data_helper_dense.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="data_helper_nmslib" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="GraphSage_preprocessing" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/data_helper_nmslib.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="data_helper_sparse" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="GraphSage_preprocessing" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/data_helper_sparse.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -271,9 +325,13 @@
     <list>
       <item itemvalue="Python.data_helper" />
       <item itemvalue="Python tests.pytest in test_pysparnn.py" />
+      <item itemvalue="Python.data_helper_nmslib" />
+      <item itemvalue="Python.data_helper_sparse" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.data_helper_nmslib" />
+        <item itemvalue="Python.data_helper_sparse" />
         <item itemvalue="Python tests.pytest in test_pysparnn.py" />
         <item itemvalue="Python.data_helper" />
       </list>
@@ -308,15 +366,15 @@
     <editor active="true" />
     <layout>
       <window_info id="Favorites" side_tool="true" />
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.13724405" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.13724405" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Version Control" />
       <window_info anchor="bottom" id="Python Console" />
-      <window_info anchor="bottom" id="Terminal" visible="true" weight="0.33851278" />
+      <window_info anchor="bottom" id="Terminal" weight="0.33851278" />
       <window_info anchor="bottom" id="Event Log" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Run" order="2" weight="0.32937366" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.32852387" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -408,17 +466,27 @@
     <entry file="file://$PROJECT_DIR$/data_helper_dense.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2152">
-          <caret line="125" lean-forward="true" selection-start-line="125" selection-end-line="125" />
+          <caret line="125" selection-start-line="125" selection-end-line="125" />
           <folding>
             <element signature="e#25#45#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/data_helper_nmslib.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="315">
+          <caret line="72" column="40" lean-forward="true" selection-start-line="72" selection-start-column="8" selection-end-line="72" selection-end-column="40" />
+          <folding>
+            <element signature="e#25#37#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/data_helper_sparse.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-3108">
-          <caret line="33" column="24" selection-start-line="33" selection-start-column="24" selection-end-line="33" selection-end-column="24" />
+        <state relative-caret-position="397">
+          <caret line="80" column="20" lean-forward="true" selection-start-line="80" selection-start-column="20" selection-end-line="80" selection-end-column="20" />
           <folding>
             <element signature="e#25#45#0" expanded="true" />
           </folding>
