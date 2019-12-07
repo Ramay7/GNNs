@@ -82,11 +82,14 @@ def find_edges(input, test, K):
         for i in tqdm(range(test.shape[0])):
             indices.append(tree.search_by_vector(test[i, :], k=K + 1))
     elif kNN_type == 4:
+        indices = tree.search(test, k=K+1, k_clusters=100, return_distance=False)
+    elif kNN_type == 4:
         indices_ = tree.knnQueryBatch(test, k=K, num_threads=num_threads)
         indices = [i[0] for i in indices_]
         del indices_
     else:
-        indices = tree.search(test, k=K+1, k_clusters=100, return_distance=False)
+        raise NotImplementedError
+
     print(f"time={time.time()-st_time:.3f}s")
 
 
@@ -148,7 +151,7 @@ def create_json_file(edge, fea, tra_id, val_id, tst_id, dataset_name, suffix=Non
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--knn_type", default=4, type=int, choices=[1, 2, 3, 4], help="the algorithm of finding kNN")
+    parser.add_argument("--knn_type", default=4, type=int, choices=[1, 2, 3, 4, 5], help="the algorithm of finding kNN")
     parser.add_argument("--distance_type", default="L2", type=str, choices=["L2", "angular"], help="the way to evaluate the smiliarity of two samples")
     args = parser.parse_args()
     kNN_type = args.knn_type
