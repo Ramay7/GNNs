@@ -242,7 +242,8 @@ if __name__ == "__main__":
             # pool.join()
             pool = Pool(50)
             label_fea = pool.map(per_process, range(label_num))
-            sp.vstack(tuple(label_fea))
+            print(f"type(label_fea) = {type(label_fea)} label_fea[0]={label_fea[0]}")
+            label_fea = sp.vstack(tuple(label_fea))
             sp.save_npz(file_path + 'label_feat.npz', label_fea)
         else:
             label_fea = sp.load_npz(file_path + 'label_feat.npz')
