@@ -153,7 +153,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--knn_type", default=4, type=int, choices=[1, 2, 3, 4, 5], help="the algorithm of finding kNN")
     parser.add_argument("--distance_type", default="L2", type=str, choices=["L2", "angular"], help="the way to evaluate the smiliarity of two samples")
-    parser.add_argument("--user_prepro_y", default=True, type=bool, help="whether or not use preprocessing features of labels")
+    parser.add_argument("--use_prepro_y", default=True, type=bool, help="whether or not use preprocessing features of labels")
     args = parser.parse_args()
     kNN_type = args.knn_type
     distance_type = args.distance_type
