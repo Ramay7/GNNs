@@ -9,15 +9,19 @@ import json
 import networkx as nx
 from collections import defaultdict
 import argparse
+import scipy.io as sio
+from multiprocessing import Pool
 
 datasets = ['Eurlex-4K']
 datasets = ['Wiki10-31K']
-datasets = ['AmazonCat-13K']
+# datasets = ['AmazonCat-13K']
 suffix = ['X.trn.npz', 'X.tst.npz', 'X.val.npz', 'Y.trn.npz', 'Y.tst.npz', 'Y.val.npz']
 
 # K = 10 # for kNN
 kNN_type = 4
 distance_type = 'L2'
+
+num_threads = 25
 
 '''
 Solutions for kNN:
@@ -53,7 +57,7 @@ def find_edges(input, test, K):
         tree = ci.MultiClusterIndex(input, range(input_num))
     elif kNN_type == 5:
         import nmslib
-        M, efC, num_threads = 30, 100, 10
+        M, efC = 30, 100
         index_time_params = {'M': M, 'indexThreadQty': num_threads, 'efConstruction': efC, 'post': 0}
         
         space_names = ['l2_sparse', 'cosinesimil_sparse'] # https://github.com/nmslib/nmslib/blob/master/manual/spaces.md
@@ -61,17 +65,24 @@ def find_edges(input, test, K):
         data_type = nmslib.DataType.SPARSE_VECTOR
         tree = nmslib.init(method='hnsw', space=space_name, data_type=data_type)
         
-        print(f"type(input) = {type(input)} type(test)={type(test)}", end=" ")
-        
+        '''
+        def calc_zero_rows(i):
+            if input[i, :].getnnz() == 0:
+                return 1
+            else:
+                return 0
+        pool = Pool(num_threads)
+        zero_row_num = sum(pool.map(calc_zero_rows, range(input.shape[0])))
+        print(f"# zero rows in input = {zero_row_num}", end=" ")
+        '''
         tree.addDataPointBatch(input)
 
-        tree.createIndex(index_time_params)
+        tree.createIndex(index_time_params, print_progress=True)
         # Setting query-time parameters
         efS = 100
         query_time_params = {'efSearch': efS}
-        print('Setting query-time parameters', query_time_params)
+        print('Setting query-time parameters', query_time_params, end=" ")
         tree.setQueryTimeParams(query_time_params)
-
     else:
         raise NotImplementedError
     print(f"time={time.time()-st_time:.3f}s")
@@ -89,6 +100,17 @@ def find_edges(input, test, K):
     elif kNN_type == 4:
         indices = tree.search(test, k=K+1, k_clusters=100, return_distance=False)
     elif kNN_type == 5:
+        '''
+        def calc_zero_rows2(i):
+            if test[i, :].getnnz() == 0:
+                return 1
+            else:
+                return 0
+        pool = Pool(num_threads)
+        zero_row_num = sum(pool.map(calc_zero_rows2, range(test.shape[0])))
+        print(f"# zero rows in test = {zero_row_num}")
+        '''
+
         indices_ = tree.knnQueryBatch(test, k=K+1, num_threads=num_threads)
         indices = [i[0] for i in indices_]
         del indices_
@@ -105,7 +127,7 @@ def find_edges(input, test, K):
             index2 = int(index2)
             if index1 != index2:
                 edge_list.append((index1, index2))
-    print(f"\tdone! .... time={time.time()-st_time:.3f}s")
+    print(f"\tget edges done! .... time={time.time()-st_time:.3f}s")
     return edge_list
 
 def create_json_file(edge, fea, tra_id, val_id, tst_id, dataset_name, suffix=None, K=10):
@@ -166,7 +188,8 @@ if __name__ == "__main__":
     kNN_type = args.knn_type
     distance_type = args.distance_type
     dataset = args.dataset
-
+    
+    # pool = Pool(num_threads)
     # for dataset in datasets:
     for _ in range(1):
         begin_time = time.time()
@@ -175,12 +198,44 @@ if __name__ == "__main__":
         data, nums = [], []
         for j in range(len(suffix)):
             tmp = sp.load_npz(file_path + suffix[j])
+            
+            zero_rows = sp.csr_matrix((1, tmp.shape[1]))
+            zero_rows[0, 0] = 1e-10
+            
+            def process_zero_rows(jj):
+                if tmp[jj].getnnz() == 0:
+                    return zero_rows
+                return tmp[jj]
+            pool = Pool(num_threads)
+            tmp_ = pool.map(process_zero_rows, range(tmp.shape[0]))
+            tmp = sp.vstack(tuple(tmp_))
+            # del pool
+
             data.append(tmp)
             nums.append(data[-1].shape[0])
             print(f"{suffix[j]}={data[-1].shape}", end=' ')
         print("")
         tra_fea, tst_fea, val_fea, tra_lab, tst_lab, val_lab = data
         tra_num, tst_num, val_num = nums[0], nums[1], nums[2]
+        
+        zero_num = [0, 0, 0]
+        for index, per_fea in enumerate([tra_fea, tst_fea, val_fea]):
+            print(f"index={index} shape={per_fea.shape}")
+            def fea_counter(i):
+                if per_fea[i, :].getnnz() == 0:
+                    return 1
+                else:
+                    return 0
+            pool = Pool(num_threads)
+            zero_num[index] = sum(pool.map(fea_counter, range(per_fea.shape[0])))
+            # del pool
+
+            '''
+            for i in range(per_fea.shape[0]):
+                if per_fea[i, :].getnnz() == 0:
+                    zero_num[index] += 1
+            '''
+        print(zero_num)
 
         tra_val_fea = sp.vstack([tra_fea, val_fea])
         all_fea = sp.vstack([tra_val_fea, tst_fea])
@@ -236,7 +291,8 @@ if __name__ == "__main__":
             '''
 
             def per_process(i):
-                tmp = sp.csr_matrix((data_, (row_, col_)), shape=(1, fea_dim))
+                tmp = sp.csr_matrix((1, fea_dim))
+                # tmp = sp.csr_matrix((data_, (row_, col_)), shape=(1, fea_dim))
                 if len(y_x_id[i]) == 0:
                     error_label.append(i)
                     tmp[0,0] = 1e-10
@@ -246,19 +302,10 @@ if __name__ == "__main__":
                 assert len(tmp.nonzero()) > 0, f"Error i={i} len(tmp.nonzero())={len(tmp.nonzero())}"
                 return tmp
 
-
-            from multiprocessing.dummy import Pool as ThreadPool
-            from multiprocessing import Pool
-
-            # pool = ThreadPool()
-            # label_fea = pool.map(per_process, range(label_num))
-            # pool.close()
-            # pool.join()
-            
-            pool = Pool(25)
+            pool = Pool(num_threads)
             label_fea = pool.map(per_process, range(label_num))
             label_fea = sp.vstack(tuple(label_fea))
-            
+            # del pool
 
             print(f"# error label = {len(error_label)}")
             sp.save_npz(file_path + 'label_feat.npz', label_fea)
@@ -269,8 +316,10 @@ if __name__ == "__main__":
 
         y_tra_id = [i for i in range(label_fea.shape[0])]
         y_val_id, y_tst_id = [], []
+         
+        sio.savemat(file_path + 'matlab.mat', {'tra_val_fea': tra_val_fea, 'all_fea': all_fea, 'label_fea': label_fea})
 
-        for K in [1, 5, 10, 20, 50, 100]:
+        for K in [10, 20, 50, 100]:
             print(f"\nK={K} ...\npreprocessing features ...")
             t0 = time.time()
             x_edge_list = find_edges(tra_val_fea, all_fea, K)

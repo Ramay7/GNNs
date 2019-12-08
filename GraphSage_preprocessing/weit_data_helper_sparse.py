@@ -272,8 +272,8 @@ if __name__ == "__main__":
         y_tra_id = [i for i in range(label_fea.shape[0])]
         y_val_id, y_tst_id = [], []
 
-        num_clusters = 10
-        kmeans = KMeans(n_clusters=num_clusters, random_state=0, n_jobs=20).fit(tra_val_fea)
+        num_clusters = 3
+        kmeans = KMeans(n_clusters=num_clusters, init='k-means++', random_state=0, n_jobs=20, max_iter =10).fit(tra_val_fea)
         nearest_centers = kmeans.predict(all_fea)
         for K in [1, 5, 10, 20, 50, 100]:
             print(f"\nK={K} ...\npreprocessing features ...")
