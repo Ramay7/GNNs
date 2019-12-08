@@ -9,6 +9,7 @@ import json
 import networkx as nx
 from collections import defaultdict
 import argparse
+from sklearn.cluster import KMeans
 
 datasets = ['Eurlex-4K']
 datasets = ['Wiki10-31K']
@@ -28,7 +29,7 @@ Solutions for kNN:
     * nmslib (sparse input): https://github.com/nmslib/nmslib
 '''
 
-def find_edges(input, test, K):
+def find_edges(input, test, K, cluster_ids, query_ids):
     print(f"\tbuilding kNN classifier ... ", end=" ")
     st_time = time.time()
 
@@ -55,9 +56,7 @@ def find_edges(input, test, K):
         import nmslib
         M, efC, num_threads = 30, 100, 10
         index_time_params = {'M': M, 'indexThreadQty': num_threads, 'efConstruction': efC, 'post': 0}
-        
-        space_names = ['l2_sparse', 'cosinesimil_sparse'] # https://github.com/nmslib/nmslib/blob/master/manual/spaces.md
-        space_name = space_names[0]
+        space_name = 'cosinesimil_sparse'
         data_type = nmslib.DataType.SPARSE_VECTOR
         tree = nmslib.init(method='hnsw', space=space_name, data_type=data_type)
         
@@ -89,7 +88,7 @@ def find_edges(input, test, K):
     elif kNN_type == 4:
         indices = tree.search(test, k=K+1, k_clusters=100, return_distance=False)
     elif kNN_type == 5:
-        indices_ = tree.knnQueryBatch(test, k=K+1, num_threads=num_threads)
+        indices_ = tree.knnQueryBatch(test, k=K, num_threads=num_threads)
         indices = [i[0] for i in indices_]
         del indices_
     else:
@@ -100,11 +99,10 @@ def find_edges(input, test, K):
 
     edge_list = []
     for index1, per in enumerate(indices):
-        assert len(per) == K+1, f"index1={index1} len(per)={len(per)} != K={K}"
         for index2 in per:
             index2 = int(index2)
             if index1 != index2:
-                edge_list.append((index1, index2))
+                edge_list.append((query_ids[index1], center_ids[index2]))
     print(f"\tdone! .... time={time.time()-st_time:.3f}s")
     return edge_list
 
@@ -160,15 +158,11 @@ if __name__ == "__main__":
     parser.add_argument("--knn_type", default=4, type=int, choices=[1, 2, 3, 4, 5], help="the algorithm of finding kNN")
     parser.add_argument("--distance_type", default="L2", type=str, choices=["L2", "angular"], help="the way to evaluate the smiliarity of two samples")
     parser.add_argument("--use_prepro_y", default=False, type=bool, help="whether or not use preprocessing features of labels")
-    parser.add_argument("--dataset", default="AmazonCat-13K", type=str, choices = ["Eurlex-4K", "Wiki10-31K", "AmazonCat-13K"], help="dataset name")
-
     args = parser.parse_args()
     kNN_type = args.knn_type
     distance_type = args.distance_type
-    dataset = args.dataset
 
-    # for dataset in datasets:
-    for _ in range(1):
+    for dataset in datasets:
         begin_time = time.time()
         print(f"start preprocessing {dataset} ...")
         file_path = './vanilla_data/' + dataset + '/'
@@ -236,7 +230,9 @@ if __name__ == "__main__":
             '''
 
             def per_process(i):
-                tmp = sp.csr_matrix((data_, (row_, col_)), shape=(1, fea_dim))
+                print (f'##################processing the {i}-th label########################')
+                tmp = sp.csr_matrix((1, fea_dim))
+                #tmp = sp.csr_matrix((data_, (row_, col_)), shape=(1, fea_dim))
                 if len(y_x_id[i]) == 0:
                     error_label.append(i)
                     tmp[0,0] = 1e-10
@@ -249,19 +245,25 @@ if __name__ == "__main__":
 
             from multiprocessing.dummy import Pool as ThreadPool
             from multiprocessing import Pool
+            from joblib import Parallel, delayed
 
             # pool = ThreadPool()
             # label_fea = pool.map(per_process, range(label_num))
             # pool.close()
             # pool.join()
-            
+            print ('parallel starting...')
+            #label_fea = Parallel(n_jobs=25, prefer="threads")(delayed(per_process)(i) for i in range(label_num))
+            #label_fea = sp.vstack(tuple(label_fea))
+
             pool = Pool(25)
             label_fea = pool.map(per_process, range(label_num))
             label_fea = sp.vstack(tuple(label_fea))
-            
-
-            print(f"# error label = {len(error_label)}")
             sp.save_npz(file_path + 'label_feat.npz', label_fea)
+
+            print ('parallel ending...')
+            print (label_fea.shape)
+            print (label_fea.getnnz())
+
         else:
             print(f"----load preprocessed label_features from {file_path + 'label_feat.npz'}")
             label_fea = sp.load_npz(file_path + 'label_feat.npz')
@@ -270,10 +272,19 @@ if __name__ == "__main__":
         y_tra_id = [i for i in range(label_fea.shape[0])]
         y_val_id, y_tst_id = [], []
 
+        num_clusters = 10
+        kmeans = KMeans(n_clusters=num_clusters, random_state=0, n_jobs=20).fit(tra_val_fea)
+        nearest_centers = kmeans.predict(all_fea)
         for K in [1, 5, 10, 20, 50, 100]:
             print(f"\nK={K} ...\npreprocessing features ...")
             t0 = time.time()
-            x_edge_list = find_edges(tra_val_fea, all_fea, K)
+
+            x_edge_list = []
+            for i in range(num_clusters):
+                cluster_ids = np.where(kmeans.labels_ == i)[0]
+                query_ids = np.where(nearest_centers == i)[0]
+                x_edge_list += find_edges(tra_val_fea[cluster_ids, :], all_fea[query_ids, :], K, cluster_ids, query_ids)
+
             create_json_file(x_edge_list, all_fea, tra_id, val_id, tst_id, dataset, suffix='X-', K=K)
             
             print(f"preprocessing labels ...")		
