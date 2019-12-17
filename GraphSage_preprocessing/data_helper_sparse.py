@@ -319,14 +319,16 @@ if __name__ == "__main__":
          
         sio.savemat(file_path + 'matlab.mat', {'tra_val_fea': tra_val_fea, 'all_fea': all_fea, 'label_fea': label_fea})
 
-        for K in [10, 20, 50, 100]:
+        for K in [50, 100]: # [1, 5, 10, 20, 50, 100]
             print(f"\nK={K} ...\npreprocessing features ...")
             t0 = time.time()
             x_edge_list = find_edges(tra_val_fea, all_fea, K)
             create_json_file(x_edge_list, all_fea, tra_id, val_id, tst_id, dataset, suffix='X-', K=K)
+            print(f"finish features, time = {time.time()-t0:.3f}s")
             
             print(f"preprocessing labels ...")		
             y_edge_list = find_edges(label_fea, label_fea, K)
             create_json_file(y_edge_list, label_fea, y_tra_id, y_val_id, y_tst_id, dataset, suffix='Y-', K=K)
+            print(f"finish labels, time = {time.time() - t0:.3f}s")
 
         print(f"finish {dataset} time={time.time()-begin_time:.3f}s")
